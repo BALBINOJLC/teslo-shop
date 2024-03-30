@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+postgress/
+.env/
+
 # Logs
 logs
 *.log
