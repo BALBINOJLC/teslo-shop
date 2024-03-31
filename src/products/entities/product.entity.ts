@@ -1,33 +1,31 @@
-//Un Entity es como se ve una tabla 
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { ProductImage } from './';
 
-import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-
-@Entity()
+@Entity({ name: 'products' })
 export class Product {
-
 
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
     @Column('text', {
-        unique: true
+        unique: true,
     })
     title: string;
 
-    @Column('float', {
+    @Column('float',{
         default: 0
     })
     price: number;
 
-    @Column(
-        {
-            type: 'text',
-            nullable: true
-        }
-    )
+    @Column({
+        type: 'text',
+        nullable: true
+    })
     description: string;
 
-    @Column({ type: 'text', unique: true })
+    @Column('text', {
+        unique: true
+    })
     slug: string;
 
     @Column('int', {
@@ -35,42 +33,51 @@ export class Product {
     })
     stock: number;
 
-    @Column('text', {
+    @Column('text',{
         array: true
     })
     sizes: string[];
 
     @Column('text')
-    gandes: string
+    gender: string;
 
-    @Column({
-        type: 'text',
+
+    @Column('text', {
         array: true,
         default: []
     })
     tags: string[];
 
+    // images
+    @OneToMany(
+        () => ProductImage,
+        (productImage) => productImage.product,
+        { cascade: true, eager: true }
+    )
+    images?: ProductImage[];
+
+
     @BeforeInsert()
     checkSlugInsert() {
-        if (!this.slug)
-            this.slug = this.title
-                .toLowerCase()
-                .replaceAll(' ', '_')
-                .replaceAll("'", '')
+
+        if ( !this.slug ) {
+            this.slug = this.title;
+        }
+
+        this.slug = this.slug
+            .toLowerCase()
+            .replaceAll(' ','_')
+            .replaceAll("'",'')
+
     }
-
-
 
     @BeforeUpdate()
     checkSlugUpdate() {
-        this.slug = this.title
+        this.slug = this.slug
             .toLowerCase()
-            .replaceAll(' ', '_')
-            .replaceAll("'", '')
+            .replaceAll(' ','_')
+            .replaceAll("'",'')
     }
 
-
-    //tags
-    //images
 
 }
