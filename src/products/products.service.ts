@@ -8,6 +8,7 @@ import { PaginationDto } from 'src/common/dtos/paginations.dto';
 import { validate as isUUID } from 'uuid';
 import { ProductImage } from './entities';
 import { query } from 'express';
+import { User } from 'src/auth/entities/user.entity';
 @Injectable()
 export class ProductsService {
 
@@ -24,14 +25,15 @@ export class ProductsService {
 
   ) { }
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, user: User) {
     
     try {
       const { images = [], ...productDetails } = createProductDto;
 
       const product = this.productRepository.create({
         ...productDetails,
-        images: images.map( image => this.productImageRepository.create({ url: image }) )
+        images: images.map( image => this.productImageRepository.create({ url: image }) ),
+        user,
       });
       
       await this.productRepository.save( product );
@@ -39,12 +41,22 @@ export class ProductsService {
       return { ...product, images };
       
     } catch (error) {
-      this.handleExceptions(error);
+      this.handleDBExceptions(error);
     }
 
 
   }
 
+  private handleDBExceptions( error: any ) {
+
+    if ( error.code === '23505' )
+      throw new BadRequestException(error.detail);
+    
+    this.logger.error(error)
+    // console.log(error)
+    throw new InternalServerErrorException('Unexpected error, check server logs');
+
+  }
   //TODO:paginar
   // findAll(pagination: PaginationDto) { //TODO: se puede hacer de esta manera
   //   try {
